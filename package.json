@@ -1,0 +1,21 @@
+{
+  "name": "discord-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node build/index.js",
+    "prestart": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "keyv": "^4.5.2",
+    "keyv-file": "^0.2.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.1"
+  }
+}
