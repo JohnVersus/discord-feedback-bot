@@ -1,10 +1,10 @@
 {
-  "name": "discord-bot",
+  "name": "discord-feedback-bot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node build/index.js",
+    "start": "pm2-runtime start build/index.js ",
     "prestart": "tsc"
   },
   "keywords": [],
