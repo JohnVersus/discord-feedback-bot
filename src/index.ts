@@ -292,7 +292,7 @@ client.on("interactionCreate", async (interaction) => {
         ],
       });
       const userId = interaction.user.id;
-      const data: DbValue | undefined = await db.get(userId);
+      const data: DbValue | undefined = await cache.get(userId);
       if (!data) throw new Error("Missing Data");
       data.apiRating = interaction.values[0];
       cache.set(userId, data);
