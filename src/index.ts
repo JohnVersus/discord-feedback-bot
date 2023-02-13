@@ -166,37 +166,45 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId === "start_feedback") {
       const userId = interaction.user.id;
 
-      interaction.reply({
-        content: "How would you rate the `Moralis API products`?",
-        ephemeral: true,
-        components: [
-          apiRatingSelect as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
-        ],
-      });
+      const existingUser = await db.has(userId);
 
-      // initial message to be deleted here
-      try {
-        const data: DbValue | undefined = await cache.get(userId);
-        if (!data) {
-          const data: DbValue = await db.get(userId);
-          if (data.messageId) {
-            interaction.channel?.messages
-              .delete(data.messageId as MessageResolvable)
-              .catch(() => {});
+      if (!existingUser) {
+        interaction.reply({
+          content: "How would you rate the Moralis API products?",
+          ephemeral: true,
+          components: [
+            apiRatingSelect as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
+          ],
+        });
+
+        // initial message to be deleted here
+        try {
+          const data: DbValue | undefined = await cache.get(userId);
+          if (!data) {
+            const dataCache = await cache.set(userId, {
+              apiRating: "0",
+              supportRating: "0",
+              feedback: "none",
+            });
+          } else if (data) {
+            if (data.messageId) {
+              interaction.channel?.messages
+                .delete(data.messageId as MessageResolvable)
+                .catch(() => {});
+            }
             delete data.messageId;
             cache.set(userId, data);
           }
-        } else if (data) {
-          if (data.messageId) {
-            interaction.channel?.messages
-              .delete(data.messageId as MessageResolvable)
-              .catch(() => {});
-          }
-          delete data.messageId;
-          cache.set(userId, data);
+        } catch (error) {
+          console.log(error);
         }
-      } catch (error) {
-        console.log(error);
+      } else {
+        interaction.reply({
+          content: "Feedback already submitted!!",
+          embeds: [],
+          ephemeral: true,
+          components: [],
+        });
       }
     } else if (interaction.customId === "more_feedback") {
       interaction.showModal(feedbackModal);
@@ -285,7 +293,7 @@ client.on("interactionCreate", async (interaction) => {
       // writeDb(db);
       interaction.update({
         content:
-          "How would you rate the `Moralis Support` you receive in discord?",
+          "How would you rate the Moralis Support you receive in discord?",
         // ephemeral: true,
         components: [
           supportRatingSelect as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
