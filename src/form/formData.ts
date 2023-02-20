@@ -5,6 +5,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
+  GuildMember,
   InteractionReplyOptions,
   ModalBuilder,
   StringSelectMenuBuilder,
@@ -132,6 +133,34 @@ const withoutTrustpilotEnd: InteractionReplyOptions = {
   ],
 };
 
+const getInitFeedbackReq = (user: GuildMember): EmbedBuilder => {
+  return new EmbedBuilder()
+    .setColor(0x16d195)
+    .setAuthor({
+      name: "Feedback Request",
+      iconURL: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
+      url: "https://moralis.io",
+    })
+    .setDescription(
+      `Hi ${user}, this feedback request is triggered based on recent experience in the Moralis discord. \n\n Please click on the above start button to provide feedback and help us improve. \n \n Thank You!!`
+    )
+    .setTimestamp();
+};
+
+const getInitFeedbackReqOnLevelUp = (user: GuildMember): EmbedBuilder => {
+  return new EmbedBuilder()
+    .setColor(0x16d195)
+    .setAuthor({
+      name: "Feedback Request",
+      iconURL: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
+      url: "https://moralis.io",
+    })
+    .setDescription(
+      `Hi ${user}, this feedback request is triggered as you have reached level 5 on our discord. \n\n Please click on the above start button to provide feedback and help us improve. \n \n Thank You!!`
+    )
+    .setTimestamp();
+};
+
 export {
   startFeedbackEmbed,
   startFeedbackButton,
@@ -144,4 +173,6 @@ export {
   deleteFeedbackButton,
   withTrustpilotEnd,
   withoutTrustpilotEnd,
+  getInitFeedbackReq,
+  getInitFeedbackReqOnLevelUp,
 };

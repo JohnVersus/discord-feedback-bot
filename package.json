@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "pm2-runtime start build/index.js ",
+    "dev": "tsc && concurrently -k \"tsc -w\" \"pm2-runtime start build/index.js --watch --name my-app\"",
     "prestart": "tsc"
   },
   "keywords": [],

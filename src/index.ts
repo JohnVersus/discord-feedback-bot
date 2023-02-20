@@ -27,12 +27,14 @@ import {
   deleteFeedbackButton,
   withoutTrustpilotEnd,
   withTrustpilotEnd,
+  getInitFeedbackReq,
+  getInitFeedbackReqOnLevelUp,
 } from "./form/formData";
 
 const db = new Keyv({ store: new KeyvFile({ filename: "db.json" }) });
 db.on("error", (err) => console.error("Keyv connection error:", err));
 
-const cache = new Keyv({ store: new KeyvFile({ filename: "db.json" }) });
+const cache = new Keyv({ store: new KeyvFile() });
 cache.on("error", (err) => console.error("Keyv connection error:", err));
 
 interface DbValue {
@@ -85,21 +87,11 @@ client.on("interactionCreate", async (interaction) => {
       interaction.targetMessage.author.id
     );
 
-    const initFeedbackRequest = new EmbedBuilder()
-      .setColor(0x16d195)
-      .setAuthor({
-        name: "Feedback Request",
-        iconURL: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
-        url: "https://moralis.io",
-      })
-      .setDescription(
-        `Hi ${user}, this feedback request is triggered based on recent experience in the Moralis discord. \n\n Please click on the above start button to provide feedback and help us improve. \n \n Thank You!!`
-      )
-      .setTimestamp();
-
     if (!user?.id) {
       throw new Error("Missing User Id on Message");
     }
+
+    const initFeedbackRequest = getInitFeedbackReq(user);
     // if (!db[user.id]) {
     //   db[user.id] = {
     //     messageId: sentMessage.id,
@@ -361,6 +353,71 @@ client.on("interactionCreate", async (interaction) => {
         cache.set(userId, data);
       }
     }
+  }
+});
+
+client.on("messageCreate", async (message) => {
+  console.log("here2");
+  console.log(message.content);
+  const message_str = message.content;
+  const regex = /<@(\d+)>\s+.*?\blevel\s+5\b/i;
+  const match = message_str.match(regex);
+
+  if (match) {
+    console.log(match);
+    const userId = match[1];
+
+    const channel = message.guild?.channels.cache.find(
+      (channel) => channel.name === "feedback"
+    );
+
+    const user = message.guild?.members.cache.get(match[1]);
+
+    if (!user) {
+      throw new Error("User Not Found");
+    }
+
+    const initFeedbackRequest = getInitFeedbackReqOnLevelUp(user);
+
+    if (!user?.id) {
+      throw new Error("Missing User Id on Message");
+    }
+    // if (!db[user.id]) {
+    //   db[user.id] = {
+    //     messageId: sentMessage.id,
+    //     apiRating: "0",
+    //     supportRating: "0",
+    //     feedback: "none",
+    //   };
+    // }
+    const cacheData = await cache.has(user.id);
+    const data = await db.has(user.id);
+    if (!data && !cacheData) {
+      const sentMessage = await (channel as TextChannel)?.send({
+        embeds: [initFeedbackRequest],
+        content: `||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _ ${user}`,
+      });
+      await cache.set(user.id, {
+        messageId: sentMessage.id,
+        apiRating: "0",
+        supportRating: "0",
+        feedback: "none",
+      });
+      await message.reply({
+        content: `Feedback request sent to the ${user} .`,
+        // ephemeral: true,
+      });
+    } else {
+      await message.reply({
+        content: "Feedback already requested to this user.",
+        // ephemeral: true,
+        components: [
+          // deleteFeedbackButton as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
+        ],
+      });
+    }
+  } else {
+    console.log("No match found");
   }
 });
 
