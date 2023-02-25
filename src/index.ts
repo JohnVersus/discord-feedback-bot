@@ -357,10 +357,11 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.on("messageCreate", async (message) => {
-  console.log("here2");
-  console.log(message.content);
+  if ((message.channelId = "900729896475709480")) {
+    console.log(message.content);
+  }
   const message_str = message.content;
-  const regex = /<@(\d+)>\s+.*?\blevel\s+5\b/i;
+  const regex = /<@(\d+)>\s*.*?\blevel\s+5\b/i;
   const match = message_str.match(regex);
 
   if (match) {
