@@ -364,7 +364,7 @@ client.on("messageCreate", async (message) => {
   const regex = /<@(\d+)>\s*.*?\blevel\s+5\b/i;
   const match = message_str.match(regex);
 
-  if (match) {
+  if ((message.channelId = "900729896475709480") && match) {
     console.log(match);
     const userId = match[1];
 
