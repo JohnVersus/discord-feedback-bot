@@ -9,12 +9,15 @@ import {
   EmbedBuilder,
   codeBlock,
   MessageResolvable,
+  ActionRowBuilder,
 } from "discord.js";
 import { REST } from "@discordjs/rest";
 import Keyv from "keyv";
 import KeyvFile from "keyv-file";
 
 import setFeedbackMessage from "./commands/setFeedbackMessage";
+import { generateEmbedsAndButtons } from "./docs/docs";
+
 import {
   startFeedbackEmbed,
   startFeedbackButton,
@@ -30,6 +33,8 @@ import {
   getInitFeedbackReq,
   getInitFeedbackReqOnLevelUp,
 } from "./form/formData";
+
+const DOCS_CHANNEL_NAME = "📚-documentation";
 
 const db = new Keyv({ store: new KeyvFile({ filename: "db.json" }) });
 db.on("error", (err) => console.error("Keyv connection error:", err));
@@ -78,53 +83,97 @@ client.on("interactionCreate", async (interaction) => {
         throw new Error("Missing Role");
       }
       await member?.roles.add(role);
-    }
-    const channel = interaction.guild?.channels.cache.find(
-      (channel) => channel.name === "feedback"
-    );
 
-    const user = interaction.guild?.members.cache.get(
-      interaction.targetMessage.author.id
-    );
+      const channel = interaction.guild?.channels.cache.find(
+        (channel) => channel.name === "feedback"
+      );
 
-    if (!user?.id) {
-      throw new Error("Missing User Id on Message");
-    }
+      const user = interaction.guild?.members.cache.get(
+        interaction.targetMessage.author.id
+      );
 
-    const initFeedbackRequest = getInitFeedbackReq(user);
-    // if (!db[user.id]) {
-    //   db[user.id] = {
-    //     messageId: sentMessage.id,
-    //     apiRating: "0",
-    //     supportRating: "0",
-    //     feedback: "none",
-    //   };
-    // }
-    const cacheData = await cache.has(user.id);
-    const data = await db.has(user.id);
-    if (!data && !cacheData) {
-      const sentMessage = await (channel as TextChannel)?.send({
-        embeds: [initFeedbackRequest],
-        content: `||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _ ${user}`,
-      });
-      await cache.set(user.id, {
-        messageId: sentMessage.id,
-        apiRating: "0",
-        supportRating: "0",
-        feedback: "none",
-      });
-      await interaction.reply({
-        content: `Feedback request sent to the ${user} .`,
-        ephemeral: true,
-      });
-    } else {
-      await interaction.reply({
-        content: "Feedback already requested to this user.",
-        ephemeral: true,
-        components: [
-          // deleteFeedbackButton as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
-        ],
-      });
+      if (!user?.id) {
+        throw new Error("Missing User Id on Message");
+      }
+
+      const initFeedbackRequest = getInitFeedbackReq(user);
+      // if (!db[user.id]) {
+      //   db[user.id] = {
+      //     messageId: sentMessage.id,
+      //     apiRating: "0",
+      //     supportRating: "0",
+      //     feedback: "none",
+      //   };
+      // }
+      const cacheData = await cache.has(user.id);
+      const data = await db.has(user.id);
+      if (!data && !cacheData) {
+        const sentMessage = await (channel as TextChannel)?.send({
+          embeds: [initFeedbackRequest],
+          content: `||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _ ${user}`,
+        });
+        await cache.set(user.id, {
+          messageId: sentMessage.id,
+          apiRating: "0",
+          supportRating: "0",
+          feedback: "none",
+        });
+        await interaction.reply({
+          content: `Feedback request sent to the ${user} .`,
+          ephemeral: true,
+        });
+      } else {
+        await interaction.reply({
+          content: "Feedback already requested to this user.",
+          ephemeral: true,
+          components: [
+            // deleteFeedbackButton as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
+          ],
+        });
+      }
+    } else if (interaction.commandName === "Update Docs") {
+      const channel = interaction.guild?.channels.cache.find(
+        (channel) => channel.name === DOCS_CHANNEL_NAME
+      );
+
+      if (channel) {
+        try {
+          const docs_messages = interaction.targetMessage.attachments.toJSON();
+          const jsonContent = await fetch(docs_messages[0].url); // only reads once attachemnt
+          const jsonData: Record<
+            string,
+            Record<string, Record<string, string>>
+          > = await jsonContent.json();
+          console.log(jsonData);
+          const { embeds, rows } = generateEmbedsAndButtons(jsonData);
+
+          for (let i = 0; i < embeds.length; i++) {
+            console.log(i);
+            (channel as TextChannel)?.send({
+              embeds: [embeds[i]],
+              components: rows[i],
+            });
+          }
+
+          interaction.reply({
+            content: "Updated docs.",
+            ephemeral: true,
+          });
+        } catch (e) {
+          if (e instanceof Error) {
+            console.error("Error:", e);
+            interaction.reply({
+              content: `Error: ${e.message}.`,
+              ephemeral: true,
+            });
+          }
+        }
+      } else {
+        interaction.reply({
+          content: `${DOCS_CHANNEL_NAME} channel is missing`,
+          ephemeral: true,
+        });
+      }
     }
     // writeDb(db);
   }
@@ -357,7 +406,6 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.on("messageCreate", async (message) => {
-  console.log("here2");
   console.log(message.content);
   const message_str = message.content;
   const regex = /<@(\d+)>\s+.*?\blevel\s+5\b/i;
@@ -426,6 +474,10 @@ async function main() {
     setFeedbackMessage,
     {
       name: "Get Feedback",
+      type: 3,
+    },
+    {
+      name: "Update Docs",
       type: 3,
     },
   ];
