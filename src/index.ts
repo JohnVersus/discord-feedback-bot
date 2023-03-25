@@ -422,16 +422,17 @@ client.on("interactionCreate", async (interaction) => {
 client.on("messageCreate", async (message) => {
   console.log(message.content);
   const message_str = message.content;
-  const regex = /<@(\d+)>\s+.*?\blevel\s+5\b/i;
+  // const regex = /<@(\d+)>\s*.*?\blevel\s+5\b/i;
+  const regex = /<@(\d+)>\s*.*?\blevel\s+[345]\b/i;
   const match = message_str.match(regex);
 
-  if (match) {
+  const channel = message.guild?.channels.cache.find(
+    (channel) => channel.name === "feedback"
+  );
+
+  if ((message.channelId = "900729896475709480") && match) {
     console.log(match);
     const userId = match[1];
-
-    const channel = message.guild?.channels.cache.find(
-      (channel) => channel.name === "feedback"
-    );
 
     const user = message.guild?.members.cache.get(match[1]);
 
@@ -452,9 +453,9 @@ client.on("messageCreate", async (message) => {
     //     feedback: "none",
     //   };
     // }
-    const cacheData = await cache.has(user.id);
+    // const cacheData = await cache.has(user.id);
     const data = await db.has(user.id);
-    if (!data && !cacheData) {
+    if (!data) {
       const sentMessage = await (channel as TextChannel)?.send({
         embeds: [initFeedbackRequest],
         content: `||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​||||​|| _ _ _ _ _ _ ${user}`,
@@ -466,7 +467,7 @@ client.on("messageCreate", async (message) => {
         feedback: "none",
       });
       await message.reply({
-        content: `Feedback request sent to the ${user} .`,
+        content: `Feedback requested sent to the user.`,
         // ephemeral: true,
       });
     } else {

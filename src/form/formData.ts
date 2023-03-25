@@ -156,7 +156,7 @@ const getInitFeedbackReqOnLevelUp = (user: GuildMember): EmbedBuilder => {
       url: "https://moralis.io",
     })
     .setDescription(
-      `Hi ${user}, this feedback request is triggered as you have reached level 5 on our discord. \n\n Please click on the above start button to provide feedback and help us improve. \n \n Thank You!!`
+      `Hi ${user}, this feedback request is triggered on reaching a new level on our discord server. \n\n Please click on the above start button to provide feedback and help us improve. \n \n Thank You!!`
     )
     .setTimestamp();
 };
