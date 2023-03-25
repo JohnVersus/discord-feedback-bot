@@ -34,6 +34,7 @@ import {
   getInitFeedbackReqOnLevelUp,
 } from "./form/formData";
 import getdocs, { autocomplete, execute } from "./commands/getDocs";
+import getDocsUsage from "./commands/getDocsUsage";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -204,6 +205,16 @@ client.on("interactionCreate", async (interaction) => {
       });
     } else if (interaction.commandName === "getdocs") {
       execute(interaction);
+      let count = await db.get("getdocsusage");
+      if (count === null || count === undefined) {
+        count = 0;
+      }
+      db.set("getdocsusage", Number(count) + 1);
+    } else if (interaction.commandName === "getdocsusage") {
+      const count = await db.get("getdocsusage");
+      interaction.reply({
+        content: `Docs command was used ${count} times.`,
+      });
     }
   }
 });
@@ -488,6 +499,7 @@ async function main() {
   const commands = [
     setFeedbackMessage,
     getdocs,
+    getDocsUsage,
     {
       name: "Get Feedback",
       type: 3,
