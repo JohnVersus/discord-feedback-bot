@@ -16,7 +16,7 @@ import Keyv from "keyv";
 import KeyvFile from "keyv-file";
 
 import setFeedbackMessage from "./commands/setFeedbackMessage";
-import { generateEmbedsAndButtons } from "./docs/docs";
+import { generateEmbedsAndButtons, searchDocs } from "./docs/docs";
 
 import {
   startFeedbackEmbed,
@@ -33,6 +33,7 @@ import {
   getInitFeedbackReq,
   getInitFeedbackReqOnLevelUp,
 } from "./form/formData";
+import getdocs, { autocomplete, execute } from "./commands/getDocs";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -119,7 +120,7 @@ client.on("interactionCreate", async (interaction) => {
           feedback: "none",
         });
         await interaction.reply({
-          content: `Feedback request sent to the ${user} .`,
+          content: `Feedback request sent to the ${user}`,
           ephemeral: true,
         });
       } else {
@@ -144,6 +145,7 @@ client.on("interactionCreate", async (interaction) => {
             string,
             Record<string, Record<string, string>>
           > = await jsonContent.json();
+          db.set("docReference", jsonData);
           console.log(jsonData);
           const { embeds, rows } = generateEmbedsAndButtons(jsonData);
 
@@ -154,10 +156,13 @@ client.on("interactionCreate", async (interaction) => {
               components: rows[i],
             });
           }
+          (channel as TextChannel)?.send({
+            embeds: [searchDocs],
+          });
 
           interaction.reply({
-            content: "Updated docs.",
-            ephemeral: true,
+            content: `Updated docs in ${DOCS_CHANNEL_NAME}`,
+            // ephemeral: true,
           });
         } catch (e) {
           if (e instanceof Error) {
@@ -197,6 +202,8 @@ client.on("interactionCreate", async (interaction) => {
         content: "Message added in #feedback channel!!",
         ephemeral: true,
       });
+    } else if (interaction.commandName === "getdocs") {
+      execute(interaction);
     }
   }
 });
@@ -403,6 +410,13 @@ client.on("interactionCreate", async (interaction) => {
       }
     }
   }
+  if (interaction.isAutocomplete()) {
+    try {
+      await autocomplete(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 });
 
 client.on("messageCreate", async (message) => {
@@ -472,6 +486,7 @@ client.on("messageCreate", async (message) => {
 async function main() {
   const commands = [
     setFeedbackMessage,
+    getdocs,
     {
       name: "Get Feedback",
       type: 3,

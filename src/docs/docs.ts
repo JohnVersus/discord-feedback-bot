@@ -55,7 +55,7 @@ const generateEmbedsAndButtons = (
         i === 0
           ? new EmbedBuilder()
               .setColor(0x16d195)
-              .setTitle(`${key} API`)
+              .setTitle(`${key}`)
               .setAuthor({
                 name: "API reference docs",
                 iconURL:
@@ -63,7 +63,7 @@ const generateEmbedsAndButtons = (
                 url: "https://docs.moralis.io",
               })
               .setThumbnail(thumburl)
-              .setDescription(`${key} - ${subkey}`)
+              .setDescription(`${key.replace("API", "")} - ${subkey}`)
           : new EmbedBuilder()
               .setColor(0x16d195)
               // .setTitle(`${key} - ${subkey}`)
@@ -75,7 +75,7 @@ const generateEmbedsAndButtons = (
               // .setThumbnail(
               //   "https://avatars.githubusercontent.com/u/80474746?s=200&v=4"
               // )
-              .setDescription(`${key} - ${subkey}`);
+              .setDescription(`${key.replace("API", "")} - ${subkey}`);
       // .setTimestamp();
 
       i++;
@@ -106,17 +106,16 @@ const generateEmbedsAndButtons = (
   return { embeds, rows };
 };
 
-// const addDocsEmbed = new EmbedBuilder()
-//   .setColor(0x16d195)
-//   .setTitle("Docs")
-//   .setAuthor({
-//     name: "Moralis API Docs",
-//     iconURL: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
-//     url: "https://moralis.io",
-//   })
-//   .setThumbnail("https://avatars.githubusercontent.com/u/80474746?s=200&v=4")
-//   .setDescription("Visit Moralis Docs by clicking on the below buttons.")
-//   .setTimestamp();
+const searchDocs = new EmbedBuilder()
+  .setColor("Red")
+  // .setTitle("Docs")
+  // .setAuthor({
+  //   name: "Moralis API Docs",
+  //   iconURL: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
+  //   url: "https://docs.moralis.io",
+  // })
+  .setDescription("Use the command **/getdocs** to search for docs.");
+// .setTimestamp();
 
 // const docButtons = new ActionRowBuilder().addComponents(
 //   new ButtonBuilder()
@@ -125,4 +124,4 @@ const generateEmbedsAndButtons = (
 //     .setURL("URL")
 // );
 
-export { generateEmbedsAndButtons };
+export { generateEmbedsAndButtons, searchDocs };
