@@ -35,6 +35,7 @@ import {
 } from "./form/formData";
 import getdocs, { autocomplete, execute } from "./commands/getDocs";
 import getDocsUsage from "./commands/getDocsUsage";
+import sendToSlack from "./slack/sendToSlack";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -441,7 +442,7 @@ client.on("messageCreate", async (message) => {
     (channel) => channel.name === "feedback"
   );
 
-  if ((message.channelId = "900729896475709480") && match) {
+  if (message.channelId === "900729896475709480" && match) {
     console.log(match);
     const userId = match[1];
 
@@ -490,8 +491,39 @@ client.on("messageCreate", async (message) => {
         ],
       });
     }
-  } else {
+  } else if (message.channelId === "900729896475709480") {
     console.log("No match found");
+  }
+
+  if (message.author.bot) {
+    const ticket_Types = [
+      "Web3 API ticket",
+      "Streams API ticket",
+      "Auth API ticket",
+    ];
+    const web3ApiTicketEmbed = message.embeds.find((embed) => {
+      // return embed.data.title === "Web3 API ticket";
+      return ticket_Types.includes(embed.data.title ? embed.data.title : "");
+      // return embed.data.title === "Open a ticket!";
+    });
+
+    if (web3ApiTicketEmbed) {
+      if (web3ApiTicketEmbed) {
+        // If Web3 API ticket found in the first embed, extract the fields from the second embed
+        const secondEmbed = message.embeds[1];
+        if (secondEmbed && secondEmbed.data.fields) {
+          const fields = secondEmbed.data.fields;
+
+          // Join all field names and values with '\n'
+          const description = fields
+            .map((field) => `*${field.name}:*\n${field.value}`)
+            .join("\n\n");
+
+          // If found, send the embed and description to the Slack webhook
+          sendToSlack(message, web3ApiTicketEmbed, description);
+        }
+      }
+    }
   }
 });
 
