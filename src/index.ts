@@ -231,8 +231,8 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId === "start_feedback") {
       const userId = interaction.user.id;
 
-      const existingUser = await db.has(userId);
-      // const existingUser = false; // uncomment to accept muptiple feedbacks
+      // const existingUser = await db.has(userId);
+      const existingUser = false; // uncomment to accept muptiple feedbacks
 
       if (!existingUser) {
         interaction.reply({

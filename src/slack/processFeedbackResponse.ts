@@ -17,19 +17,24 @@ async function processFeedbackResponse(message: Message, client: Client) {
       ? `${user.username}#${user.discriminator}`
       : "unknown";
 
+    const jsonResponse = JSON.parse(feedbackResponse);
+    const formattedDescription = Object.entries(jsonResponse)
+      .map(([key, value]) => `*${key}:*\n${value}`)
+      .join("\n\n");
+
     const feedbackEmbed = {
       title: `Feedback from ${userName}`,
       thumbnail: {
         url: "https://avatars.githubusercontent.com/u/80474746?s=200&v=4",
       },
-      description: `\`\`\`json\n${feedbackResponse}\n\`\`\``,
+      description: formattedDescription,
       color: 0x16d195,
     };
 
     sendToSlack(
       message,
       feedbackEmbed as Embed,
-      feedbackResponse,
+      formattedDescription,
       "Feedback Response"
     );
   } catch (error) {
