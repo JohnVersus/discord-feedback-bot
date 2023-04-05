@@ -4,7 +4,8 @@ import { Message, Embed, PublicThreadChannel } from "discord.js";
 async function sendToSlack(
   message: Message,
   embedData: Embed,
-  description: string
+  description: string,
+  title: string = "Suggestion"
 ) {
   if (!process.env.SLACK_WEBHOOK) {
     throw new Error("Missing slack webhook");
@@ -25,7 +26,7 @@ async function sendToSlack(
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `*<${messageUrl}|${embedData.title}>*`,
+              text: `*<${messageUrl}|${embedData.title || title}>*`,
             },
           },
           {

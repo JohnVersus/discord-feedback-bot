@@ -35,7 +35,12 @@ import {
 } from "./form/formData";
 import getdocs, { autocomplete, execute } from "./commands/getDocs";
 import getDocsUsage from "./commands/getDocsUsage";
-import sendToSlack from "./slack/sendToSlack";
+import {
+  processFeedbackResponse,
+  processSuggestion,
+  sendToSlack,
+} from "./slack";
+import { processTicket, collectFeedback } from "./slack";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -148,11 +153,9 @@ client.on("interactionCreate", async (interaction) => {
             Record<string, Record<string, string>>
           > = await jsonContent.json();
           db.set("docReference", jsonData);
-          console.log(jsonData);
           const { embeds, rows } = generateEmbedsAndButtons(jsonData);
 
           for (let i = 0; i < embeds.length; i++) {
-            console.log(i);
             (channel as TextChannel)?.send({
               embeds: [embeds[i]],
               components: rows[i],
@@ -181,6 +184,8 @@ client.on("interactionCreate", async (interaction) => {
           ephemeral: true,
         });
       }
+    } else if (interaction.commandName === "Feedback to slack") {
+      collectFeedback(interaction, client);
     }
     // writeDb(db);
   }
@@ -227,6 +232,7 @@ client.on("interactionCreate", async (interaction) => {
       const userId = interaction.user.id;
 
       const existingUser = await db.has(userId);
+      // const existingUser = false; // uncomment to accept muptiple feedbacks
 
       if (!existingUser) {
         interaction.reply({
@@ -313,7 +319,6 @@ client.on("interactionCreate", async (interaction) => {
       const finalData: DbValue = await cache.get(interaction.user.id);
 
       db.set(interaction.user.id, finalData);
-      console.log(finalData);
       const responseChannel = interaction.guild?.channels.cache.find(
         (channel) => channel.name === "feedback_responses"
       );
@@ -479,7 +484,7 @@ client.on("messageCreate", async (message) => {
         feedback: "none",
       });
       await message.reply({
-        content: `Feedback requested sent to the user.`,
+        content: `Feedback requeste sent to the user.`,
         // ephemeral: true,
       });
     } else {
@@ -496,33 +501,41 @@ client.on("messageCreate", async (message) => {
   }
 
   if (message.author.bot) {
-    const ticket_Types = [
-      "Web3 API ticket",
-      "Streams API ticket",
-      "Auth API ticket",
-    ];
-    const web3ApiTicketEmbed = message.embeds.find((embed) => {
-      // return embed.data.title === "Web3 API ticket";
-      return ticket_Types.includes(embed.data.title ? embed.data.title : "");
-      // return embed.data.title === "Open a ticket!";
-    });
+    console.log((message.channel as TextChannel).name);
+    if ((message.channel as TextChannel).name === "💡-suggestions") {
+      processSuggestion(message);
+    } else if ((message.channel as TextChannel).name === "feedback_responses") {
+      processFeedbackResponse(message, client);
+    } else {
+      // const ticket_Types = [
+      //   "Web3 API ticket",
+      //   "Streams API ticket",
+      //   "Auth API ticket",
+      // ];
+      // const web3ApiTicketEmbed = message.embeds.find((embed) => {
+      //   // return embed.data.title === "Web3 API ticket";
+      //   return ticket_Types.includes(embed.data.title ? embed.data.title : "");
+      //   // return embed.data.title === "Open a ticket!";
+      // });
 
-    if (web3ApiTicketEmbed) {
-      if (web3ApiTicketEmbed) {
-        // If Web3 API ticket found in the first embed, extract the fields from the second embed
-        const secondEmbed = message.embeds[1];
-        if (secondEmbed && secondEmbed.data.fields) {
-          const fields = secondEmbed.data.fields;
+      // if (web3ApiTicketEmbed) {
+      //   if (web3ApiTicketEmbed) {
+      //     // If Web3 API ticket found in the first embed, extract the fields from the second embed
+      //     const secondEmbed = message.embeds[1];
+      //     if (secondEmbed && secondEmbed.data.fields) {
+      //       const fields = secondEmbed.data.fields;
 
-          // Join all field names and values with '\n'
-          const description = fields
-            .map((field) => `*${field.name}:*\n${field.value}`)
-            .join("\n\n");
+      //       // Join all field names and values with '\n'
+      //       const description = fields
+      //         .map((field) => `*${field.name}:*\n${field.value}`)
+      //         .join("\n\n");
 
-          // If found, send the embed and description to the Slack webhook
-          sendToSlack(message, web3ApiTicketEmbed, description);
-        }
-      }
+      //       // If found, send the embed and description to the Slack webhook
+      //       sendToSlack(message, web3ApiTicketEmbed, description);
+      //     }
+      //   }
+      // }
+      processTicket(message);
     }
   }
 });
@@ -538,6 +551,10 @@ async function main() {
     },
     {
       name: "Update Docs",
+      type: 3,
+    },
+    {
+      name: "Feedback to slack",
       type: 3,
     },
   ];
