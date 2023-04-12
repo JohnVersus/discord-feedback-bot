@@ -41,10 +41,13 @@ import {
   sendToSlack,
 } from "./slack";
 import { processTicket, collectFeedback } from "./slack";
+import checkAndCloseThreads from "./ticket/checkAndCloseThreads";
+import autoCloseThreadCommand from "./commands/autoCloseThreadCommand";
+import handleAutoCloseThread from "./ticket/handleAutoCloseThread";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
-const db = new Keyv({ store: new KeyvFile({ filename: "db.json" }) });
+export const db = new Keyv({ store: new KeyvFile({ filename: "db.json" }) });
 db.on("error", (err) => console.error("Keyv connection error:", err));
 
 const cache = new Keyv({ store: new KeyvFile() });
@@ -75,6 +78,11 @@ if (!TOKEN) {
 }
 const rest = new REST({ version: "10" }).setToken(TOKEN);
 const wait = require("node:timers/promises").setTimeout;
+
+setInterval(() => {
+  console.log("Checking messages");
+  checkAndCloseThreads(client);
+}, 1 * 60 * 1000);
 
 client.on("interactionCreate", async (interaction) => {
   // const db: DB = readDb();
@@ -221,6 +229,8 @@ client.on("interactionCreate", async (interaction) => {
       interaction.reply({
         content: `Docs command was used ${count} times.`,
       });
+    } else if ((interaction.commandName = "autoclosethread")) {
+      handleAutoCloseThread(interaction);
     }
   }
 });
@@ -231,8 +241,8 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.customId === "start_feedback") {
       const userId = interaction.user.id;
 
-      // const existingUser = await db.has(userId);
-      const existingUser = false; // uncomment to accept muptiple feedbacks
+      const existingUser = await db.has(userId);
+      // const existingUser = false; // uncomment to accept muptiple feedbacks
 
       if (!existingUser) {
         interaction.reply({
@@ -545,6 +555,7 @@ async function main() {
     setFeedbackMessage,
     getdocs,
     getDocsUsage,
+    autoCloseThreadCommand,
     {
       name: "Get Feedback",
       type: 3,
