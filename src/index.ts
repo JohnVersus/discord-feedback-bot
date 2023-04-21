@@ -41,6 +41,7 @@ import {
   sendToSlack,
 } from "./slack";
 import { processTicket, collectFeedback } from "./slack";
+import handleThreadClose from "./tickets/handleThreadClose";
 
 const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -537,6 +538,14 @@ client.on("messageCreate", async (message) => {
       // }
       processTicket(message);
     }
+  }
+});
+
+client.on("threadUpdate", async (oldThread, newThread) => {
+  // console.log({ newThread });
+  if (newThread.archived) {
+    console.log("thread closed");
+    handleThreadClose(newThread);
   }
 });
 
