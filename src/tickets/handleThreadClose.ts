@@ -32,7 +32,7 @@ async function handleThreadClose(threadChannel: ThreadChannel) {
       const originalPoster = await threadChannel.guild.members.fetch(userId);
 
       const feedbackChannel = threadChannel.guild.channels.cache.find(
-        (channel) => channel.name === "feedback"
+        (channel) => channel.name === "🛠-feedback"
       ) as TextChannel;
 
       // Create the embed message

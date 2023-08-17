@@ -5,6 +5,7 @@ import Keyv from "keyv";
 import KeyvFile from "keyv-file";
 
 import setFeedbackMessage from "./commands/setFeedbackMessage";
+import setHelpChannelsMessage from "./commands/setHelpChannelsMessage";
 
 import getdocs from "./commands/getDocs";
 import getDocsUsage from "./commands/getDocsUsage";
@@ -59,6 +60,7 @@ client.on("threadCreate", ThreadCreateEvent);
 async function main() {
   const commands = [
     setFeedbackMessage,
+    setHelpChannelsMessage,
     getdocs,
     getDocsUsage,
     {

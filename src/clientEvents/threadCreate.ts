@@ -55,20 +55,15 @@ const handleTicketThread = async (thread: AnyThreadChannel) => {
 
 // Function to handle non-ticket threads
 export const handleNonTicketThread = async (thread: AnyThreadChannel) => {
-  // Log the thread title (name)
-  // console.log(`Thread Title: ${thread.name}`);
-
   // Fetch the first message from the thread
   const messages = await thread.messages.fetch({ limit: 1 });
   const firstMessage = messages.first();
-
-  // Check if the first message exists and log its content
+  console.log(thread);
+  // Check if the first message exists
   if (firstMessage) {
-    // console.log(`First Message Content: ${firstMessage.content}`);
     // Extract necessary data from the first message
-
     const Embed = {
-      title: "New Question",
+      title: thread.name,
       author: {
         name: `From ${thread.client.user.id}#${thread.client.user.discriminator}`,
         iconURL: thread.client.user.avatarURL() || undefined,
@@ -81,9 +76,14 @@ export const handleNonTicketThread = async (thread: AnyThreadChannel) => {
     const embed = buildNonTicketEmbed;
     await thread.send({ embeds: [embed] });
 
-    // Send the message to Slack
     await sendToSlack2(firstMessage, Embed as Embed, firstMessage.content);
-    // await sendToSlack(firstMessage, Embed as Embed, firstMessage.content);
+    // Check if the parent channel's name contains "moralis"
+
+    const parentChannel = thread.parent;
+    if (parentChannel && parentChannel.name.includes("moralis")) {
+      // Send the message to Slack
+      await sendToSlack(firstMessage, Embed as Embed, firstMessage.content);
+    }
   } else {
     console.log("No messages found in the thread.");
   }

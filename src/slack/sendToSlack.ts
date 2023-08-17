@@ -42,7 +42,8 @@ async function sendToSlack(
               {
                 type: "mrkdwn",
                 text: `*Message: * <${messageUrl}|${
-                  (message.channel as PublicThreadChannel).name
+                  (message.channel as PublicThreadChannel).name.slice(0, 16) +
+                  "..."
                 }>`,
               },
             ],

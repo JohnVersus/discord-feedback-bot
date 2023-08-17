@@ -10,7 +10,9 @@ import {
   apiRatingSelect,
   feedbackModal,
   getInitFeedbackReq,
+  helpChannelsButton,
   moreFeedbackRequest,
+  postInThreadEmbed,
   startFeedbackButton,
   startFeedbackEmbed,
   supportRatingSelect,
@@ -239,7 +241,7 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
   if (interaction.isChatInputCommand()) {
     if (interaction.commandName === "setfeedbackmessage") {
       const channel = interaction.guild?.channels.cache.find(
-        (channel) => channel.name === "feedback"
+        (channel) => channel.name === "🛠-feedback"
       );
 
       (channel as TextChannel)?.send({
@@ -265,6 +267,22 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
       interaction.reply({
         content: `Docs command was used ${count} times.`,
       });
+    } else if (interaction.commandName === "sethelpchannelsmessage") {
+      const channel = interaction.guild?.channels.cache.find(
+        (channel) => channel.name === "🎟-open-a-ticket"
+      );
+
+      (channel as TextChannel)?.send({
+        embeds: [postInThreadEmbed],
+        components: [
+          helpChannelsButton as unknown as APIActionRowComponent<APIMessageActionRowComponent>,
+        ],
+      });
+
+      await interaction.reply({
+        content: "Message added in #feedback channel!!",
+        ephemeral: true,
+      });
     }
   }
   if (interaction.isMessageContextMenuCommand()) {
@@ -282,7 +300,7 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
       await member?.roles.add(role);
 
       const channel = interaction.guild?.channels.cache.find(
-        (channel) => channel.name === "feedback"
+        (channel) => channel.name === "🛠-feedback"
       );
 
       const user = interaction.guild?.members.cache.get(

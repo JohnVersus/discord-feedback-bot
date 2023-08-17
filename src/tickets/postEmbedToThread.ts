@@ -11,7 +11,7 @@ const buildFeedbackEmbed = new EmbedBuilder()
   .setColor(0x16d195)
   .setTitle(":warning: Notice")
   .setDescription(
-    `Thanks for posting your question here. To enhance our server experience, we are transitioning to making all new posts public. This not only benefits you but also helps other users easily find answers. Therefore, please post your question in the <#${THREAD_CHANNEL}> channel. 
+    `Thanks for posting your question here. To enhance our server experience, we are transitioning to making all new posts public. This not only benefits you but also helps other users easily find answers. Therefore, please post your future question in the <#${THREAD_CHANNEL}> channel. 
     \nMoving forward tickets channel should be used only when there's private information that needs to be shared with us.
     \nThank You.🙏
     `
@@ -40,6 +40,6 @@ export const buildNonTicketEmbed = new EmbedBuilder()
   .setColor(0x16d195)
   .setTitle(":information_source: Helpful Tip")
   .setDescription(
-    "To help others find answers, you can mark your question as solved via Post `Option` -> `Edit Tags` -> `✅ Solved`"
+    "To help others find answers, you can mark your question as solved via `Options` -> `Edit Tags` -> `✅ Solved`"
   )
   .setTimestamp();

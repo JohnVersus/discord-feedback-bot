@@ -14,7 +14,7 @@ export const MessageCreateEvent = async (message: Message) => {
   const match = message_str.match(regex);
 
   const channel = message.guild?.channels.cache.find(
-    (channel) => channel.name === "feedback"
+    (channel) => channel.name === "🛠-feedback"
   );
 
   if (message.channelId === "900729896475709480" && match) {

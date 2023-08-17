@@ -161,6 +161,35 @@ const getInitFeedbackReqOnLevelUp = (user: GuildMember): EmbedBuilder => {
     .setTimestamp();
 };
 
+const postInThreadEmbed = new EmbedBuilder()
+  .setColor(0x16d195)
+  .setTitle("Channels to Ask for Help")
+  .setThumbnail("https://avatars.githubusercontent.com/u/80474746?s=200&v=4")
+  .setDescription(
+    "Please post your technical questions in <#1033636954673266738> or <#1139406658557198366> or <#1139836255820066846> channel. This will help other community members easily search for similar answers and will also improve the server experience."
+  );
+
+const helpChannelsButton = new ActionRowBuilder().addComponents(
+  new ButtonBuilder()
+    .setLabel("🔧 Moralis API Help")
+    .setStyle(ButtonStyle.Link)
+    .setURL(
+      "https://discord.com/channels/819584798443569182/1033636954673266738"
+    ),
+  new ButtonBuilder()
+    .setLabel("🔧 Moralis SDK Help")
+    .setStyle(ButtonStyle.Link)
+    .setURL(
+      "https://discord.com/channels/819584798443569182/1139406658557198366"
+    ),
+  new ButtonBuilder()
+    .setLabel("🔧 General Questions")
+    .setStyle(ButtonStyle.Link)
+    .setURL(
+      "https://discord.com/channels/819584798443569182/1139836255820066846"
+    )
+);
+
 export {
   startFeedbackEmbed,
   startFeedbackButton,
@@ -175,4 +204,6 @@ export {
   withoutTrustpilotEnd,
   getInitFeedbackReq,
   getInitFeedbackReqOnLevelUp,
+  postInThreadEmbed,
+  helpChannelsButton,
 };

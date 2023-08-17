@@ -41,9 +41,7 @@ async function sendToSlack2(
             elements: [
               {
                 type: "mrkdwn",
-                text: `*Message: * <${messageUrl}|${
-                  (message.channel as PublicThreadChannel).name
-                }>`,
+                text: `<${messageUrl}|${"Message Url"}>`,
               },
             ],
           },
