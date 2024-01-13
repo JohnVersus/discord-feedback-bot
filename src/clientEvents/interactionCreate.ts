@@ -19,10 +19,11 @@ import {
   withTrustpilotEnd,
   withoutTrustpilotEnd,
 } from "../form/formData";
-import { DOCS_CHANNEL_NAME, cache, client, db, wait } from "..";
+import { DOCS_CHANNEL_NAME, GUILD_ID, cache, client, db, wait } from "..";
 import { autocomplete, execute } from "../commands/getDocs";
 import { generateEmbedsAndButtons, searchDocs } from "../docs/docs";
 import { collectFeedback } from "../slack";
+import { fetchThreads } from "../stats/threadStats";
 
 interface DbValue {
   messageId?: string;
@@ -281,6 +282,24 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
 
       await interaction.reply({
         content: "Message added in #feedback channel!!",
+        ephemeral: true,
+      });
+    } else if (interaction.commandName === "getthreadstats") {
+      const guild = await client.guilds.fetch(GUILD_ID as string);
+      if (!guild) {
+        console.error("Guild not found. Check your GUILD_ID.");
+        return;
+      }
+      // Get the selected interval from the interaction options
+      const interval = interaction.options.getString("interval") as
+        | "week"
+        | "month";
+
+      const threads = await fetchThreads(guild, interval);
+      console.log({ threads });
+
+      await interaction.reply({
+        content: `Statistics for ${interval} retrieved.`,
         ephemeral: true,
       });
     }

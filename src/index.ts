@@ -14,6 +14,7 @@ import { InteractionCreateEvent } from "./clientEvents/interactionCreate";
 import { MessageCreateEvent } from "./clientEvents/messageCreate";
 import { ThreadUpdateEvent } from "./clientEvents/threadUpdate";
 import { ThreadCreateEvent } from "./clientEvents/threadCreate";
+import getThreadStats from "./commands/getThreadStats";
 
 export const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -63,6 +64,7 @@ async function main() {
     setHelpChannelsMessage,
     getdocs,
     getDocsUsage,
+    getThreadStats,
     {
       name: "Get Feedback",
       type: 3,

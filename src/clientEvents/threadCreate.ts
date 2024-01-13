@@ -58,7 +58,7 @@ export const handleNonTicketThread = async (thread: AnyThreadChannel) => {
   // Fetch the first message from the thread
   const messages = await thread.messages.fetch({ limit: 1 });
   const firstMessage = messages.first();
-  console.log(thread);
+
   // Check if the first message exists
   if (firstMessage) {
     // Extract necessary data from the first message
