@@ -1,6 +1,7 @@
 import {
   APIActionRowComponent,
   APIMessageActionRowComponent,
+  EmbedBuilder,
   Interaction,
   MessageResolvable,
   TextChannel,
@@ -285,22 +286,78 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
         ephemeral: true,
       });
     } else if (interaction.commandName === "getthreadstats") {
+      await interaction.deferReply({ ephemeral: true });
+
       const guild = await client.guilds.fetch(GUILD_ID as string);
       if (!guild) {
         console.error("Guild not found. Check your GUILD_ID.");
+        await interaction.editReply("Error: Guild not found.");
         return;
       }
-      // Get the selected interval from the interaction options
+
       const interval = interaction.options.getString("interval") as
         | "week"
         | "month";
+      const stats = await fetchThreads(guild, interval);
 
-      const threads = await fetchThreads(guild, interval);
-      console.log({ threads });
+      if (!stats) {
+        await interaction.editReply(
+          "Error: Unable to retrieve thread statistics."
+        );
+        return;
+      }
+      function formatTime(milliseconds: number) {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
 
-      await interaction.reply({
-        content: `Statistics for ${interval} retrieved.`,
-        ephemeral: true,
+        return `${hours > 0 ? `${hours}h ` : ""}${
+          minutes > 0 ? `${minutes}m ` : ""
+        }${seconds > 0 ? `${seconds}s` : ""}`.trim();
+      }
+      const formattedAvgResponseTime = formatTime(
+        stats.averageResponseTimeMinutes * 60000
+      );
+      // Create an embed with the statistics
+      const statsEmbed = new EmbedBuilder()
+        .setColor("#0099ff") // You can choose any color
+        .setTitle(
+          `Thread Statistics - ${
+            interval.charAt(0).toUpperCase() + interval.slice(1)
+          }`
+        )
+        .addFields(
+          {
+            name: "Number of Threads",
+            value: stats.numberOfThreads.toString() + " 🧵",
+            inline: true,
+          },
+          {
+            name: "Number of Open Threads",
+            value:
+              (stats.numberOfThreads - stats.numberOfSolvedThreads).toString() +
+              "⏳",
+            inline: true,
+          },
+          {
+            name: "Number of Solved Threads",
+            value: stats.numberOfSolvedThreads.toString() + " ✅",
+            inline: true,
+          },
+          {
+            name: "Average Response Time",
+            value: formattedAvgResponseTime + " 📈",
+            inline: true,
+          }
+        )
+        .setTimestamp()
+        .setFooter({ text: "Statistics generated" });
+
+      // Reply with the embed
+      await interaction.editReply({
+        embeds: [statsEmbed],
+        // ephemeral: true,
       });
     }
   }
