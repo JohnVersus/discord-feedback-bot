@@ -15,6 +15,7 @@ import { MessageCreateEvent } from "./clientEvents/messageCreate";
 import { ThreadUpdateEvent } from "./clientEvents/threadUpdate";
 import { ThreadCreateEvent } from "./clientEvents/threadCreate";
 import getThreadStats from "./commands/getThreadStats";
+import { scheduleDailyNotifications } from "./notifications/checkPendingIssues";
 
 export const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -58,6 +59,14 @@ client.on("threadUpdate", ThreadUpdateEvent);
 
 client.on("threadCreate", ThreadCreateEvent);
 
+client.once("ready", () => {
+  if (client.user) {
+    console.log(`Logged in as ${client.user.tag}!`);
+    scheduleDailyNotifications(client, "2024-02-07T00:00:00Z"); // Set the start date in ISO format
+  } else {
+    console.error("Login failed: client.user is null");
+  }
+});
 async function main() {
   const commands = [
     setFeedbackMessage,
