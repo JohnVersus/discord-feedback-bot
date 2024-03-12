@@ -1,4 +1,7 @@
 import { Client, TextChannel, Message } from "discord.js";
+import { config } from "dotenv";
+config();
+export const BUFFER_TIME = process.env.BUFFER_TIME;
 
 /**
  * Check for pending issues and send notifications if required.
@@ -49,7 +52,8 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
         const daysSinceMessage = Math.floor(
           (new Date().getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24)
         );
-        const isMultipleOfThreeDays = daysSinceMessage % 3 === 0;
+        const isMultipleOfThreeDays =
+          daysSinceMessage % (BUFFER_TIME as unknown as number) === 0;
         const hasCheckMark = message.reactions.cache.some(
           (reaction) => reaction.emoji.name === "✅"
         );
@@ -67,18 +71,18 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
   }
 
   if (messagesToNotify.size > 0) {
-    let notificationMessage = "Pending issues to recheck:\n";
-    messagesToNotify.forEach((links, authorId) => {
-      notificationMessage += `<@${authorId}>:\n`;
+    // Send a separate message for each user
+    for (const [authorId, links] of messagesToNotify) {
+      let userNotificationMessage = `Pending issues to recheck for <@${authorId}>:\n`;
       links.forEach((link) => {
-        notificationMessage += `${link}\n`;
+        userNotificationMessage += `${link}\n`;
       });
-      notificationMessage += "\n"; // Extra newline for spacing between users
-    });
 
-    console.log("Sending notification message.");
-    // console.log({ notificationMessage });
-    await internalNotesChannel.send(notificationMessage);
+      console.log(`Sending notification message for user ${authorId}.`);
+      //   console.log({ userNotificationMessage });
+      // Uncomment the next line to send the message
+      await internalNotesChannel.send(userNotificationMessage);
+    }
   } else {
     console.log("No notifications to send.");
   }
@@ -88,8 +92,8 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
 export function scheduleDailyNotifications(client: Client, startDate: string) {
   const startDateTime = new Date(startDate).getTime();
 
-  // only for test
-  checkPendingIssues(client, new Date(startDateTime));
+  // comment only for test
+  //   checkPendingIssues(client, new Date(startDateTime));
 
   const checkAndSchedule = () => {
     const now = new Date();
@@ -109,7 +113,7 @@ export function scheduleDailyNotifications(client: Client, startDate: string) {
 
     const nextCheck = new Date(utcNow);
     nextCheck.setUTCDate(utcNow.getUTCDate() + 1);
-    nextCheck.setUTCHours(5, 0, 0, 0); // sets the next check to be at 5 AM UTC the next day
+    nextCheck.setUTCHours(6, 0, 0, 0); // sets the next check to be at 5 AM UTC the next day
 
     const delay = nextCheck.getTime() - utcNow.getTime();
     setTimeout(checkAndSchedule, delay);
