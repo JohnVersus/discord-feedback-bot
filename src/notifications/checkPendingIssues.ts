@@ -17,9 +17,9 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
   console.log("Fetching pending issues...");
   let before: string | undefined;
   let totalMessagesFetched = 0;
-  let totalMessagesProcessed = 0;
 
-  const messagesToNotify = [];
+  // Change to a Map to group messages by authorId
+  const messagesToNotify = new Map<string, string[]>();
 
   while (true) {
     const messages = await internalNotesChannel.messages.fetch({
@@ -38,7 +38,7 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
       break;
     }
 
-    for (const [, message] of messages) {
+    messages.forEach((message) => {
       const messageDate = new Date(message.createdTimestamp);
 
       // Only process messages on or after startDate
@@ -50,47 +50,35 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
           (new Date().getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24)
         );
         const isMultipleOfThreeDays = daysSinceMessage % 3 === 0;
+        const hasCheckMark = message.reactions.cache.some(
+          (reaction) => reaction.emoji.name === "✅"
+        );
 
-        // console.log(`Evaluating message ID ${message.id}:`, {
-        //   hasLinkOrMention,
-        //   daysSinceMessage,
-        //   isMultipleOfThreeDays,
-        // });
-
-        if (hasLinkOrMention && isMultipleOfThreeDays) {
-          const hasCheckMark = message.reactions.cache.some(
-            (reaction) => reaction.emoji.name === "✅"
-          );
-          console.log({ hasCheckMark });
-          if (!hasCheckMark) {
-            messagesToNotify.push({
-              authorId: message.author.id,
-              link: message.url,
-            });
-            totalMessagesProcessed++;
-            console.log(
-              `Processed message ID ${message.id} for notifications.`
-            );
-          } else {
-            console.log(`Message ID ${message.id} has a check mark. Skipping.`);
+        if (hasLinkOrMention && isMultipleOfThreeDays && !hasCheckMark) {
+          if (!messagesToNotify.has(message.author.id)) {
+            messagesToNotify.set(message.author.id, []);
           }
+          (messagesToNotify as any).get(message.author.id).push(message.url);
         }
       }
-    }
+    });
 
     before = messages.lastKey();
   }
 
-  console.log(`Total messages to notify: ${messagesToNotify.length}`);
-  console.log(`Total messages processed: ${totalMessagesProcessed}`);
+  if (messagesToNotify.size > 0) {
+    let notificationMessage = "Pending issues to recheck:\n";
+    messagesToNotify.forEach((links, authorId) => {
+      notificationMessage += `<@${authorId}>:\n`;
+      links.forEach((link) => {
+        notificationMessage += `${link}\n`;
+      });
+      notificationMessage += "\n"; // Extra newline for spacing between users
+    });
 
-  if (messagesToNotify.length > 0) {
-    const notificationMessage = messagesToNotify
-      .map((m) => `<@${m.authorId}> - [Message Link](${m.link})`)
-      .join("\n");
     console.log("Sending notification message.");
-    console.log({ notificationMessage });
-    // await internalNotesChannel.send(notificationMessage);
+    // console.log({ notificationMessage });
+    await internalNotesChannel.send(notificationMessage);
   } else {
     console.log("No notifications to send.");
   }
