@@ -62,7 +62,7 @@ client.on("threadCreate", ThreadCreateEvent);
 client.once("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}!`);
-    scheduleDailyNotifications(client, "2024-02-07T00:00:00Z"); // Set the start date in ISO format
+    scheduleDailyNotifications(client, "2022-03-07T00:00:00Z"); // Set the start date in ISO format
   } else {
     console.error("Login failed: client.user is null");
   }

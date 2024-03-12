@@ -38,52 +38,42 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
       break;
     }
 
-    const lastMessage = messages.last();
-    console.log({ lastMessage: lastMessage?.content });
-    console.log({
-      lastMessage_time: new Date((lastMessage as any).createdTimestamp),
-    });
-    console.log({ startDate });
-    if (!lastMessage || new Date(lastMessage.createdTimestamp) < startDate) {
-      console.log("Reached the start date. Stopping message fetch.");
-      break;
-    }
-
     for (const [, message] of messages) {
-      if (message.author.bot) continue;
-
       const messageDate = new Date(message.createdTimestamp);
-      if (messageDate < startDate) {
-        console.log(
-          `Message ID ${message.id} is before the start date. Skipping.`
-        );
-        continue;
-      }
 
-      const hasLinkOrMention = message.content.match(
-        /https?:\/\/\S+|<#\d+>|\/archives\/\S+/
-      );
-      const isMultipleOfThreeDays =
-        Math.floor(
+      // Only process messages on or after startDate
+      if (messageDate >= startDate) {
+        const hasLinkOrMention = message.content.match(
+          /https?:\/\/\S+|<#\d+>|\/archives\/\S+/
+        );
+        const daysSinceMessage = Math.floor(
           (new Date().getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24)
-        ) %
-          3 ===
-        0;
-
-      if (hasLinkOrMention && isMultipleOfThreeDays) {
-        const hasCheckMark = message.reactions.cache.some(
-          (reaction) => reaction.emoji.name === "✅"
         );
+        const isMultipleOfThreeDays = daysSinceMessage % 3 === 0;
 
-        if (!hasCheckMark) {
-          messagesToNotify.push({
-            authorId: message.author.id,
-            link: message.url,
-          });
-          totalMessagesProcessed++;
-          console.log(`Processed message ID ${message.id} for notifications.`);
-        } else {
-          console.log(`Message ID ${message.id} has a check mark. Skipping.`);
+        // console.log(`Evaluating message ID ${message.id}:`, {
+        //   hasLinkOrMention,
+        //   daysSinceMessage,
+        //   isMultipleOfThreeDays,
+        // });
+
+        if (hasLinkOrMention && isMultipleOfThreeDays) {
+          const hasCheckMark = message.reactions.cache.some(
+            (reaction) => reaction.emoji.name === "✅"
+          );
+          console.log({ hasCheckMark });
+          if (!hasCheckMark) {
+            messagesToNotify.push({
+              authorId: message.author.id,
+              link: message.url,
+            });
+            totalMessagesProcessed++;
+            console.log(
+              `Processed message ID ${message.id} for notifications.`
+            );
+          } else {
+            console.log(`Message ID ${message.id} has a check mark. Skipping.`);
+          }
         }
       }
     }
@@ -98,7 +88,6 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
     const notificationMessage = messagesToNotify
       .map((m) => `<@${m.authorId}> - [Message Link](${m.link})`)
       .join("\n");
-
     console.log("Sending notification message.");
     console.log({ notificationMessage });
     // await internalNotesChannel.send(notificationMessage);
