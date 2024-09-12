@@ -12,7 +12,7 @@ export const ThreadUpdateEvent = async (
     const availableTags = (channel as ForumChannel).availableTags;
 
     // Find the ID of the tag with the name "Solved"
-    const solvedTag = availableTags.find((tag) => tag.name.includes("Solved"));
+    const solvedTag = availableTags?.find((tag) => tag.name.includes("Solved"));
     const solvedTagId = solvedTag ? solvedTag.id : null;
     if (!solvedTagId) {
       console.error("Couldn't find the 'Solved' tag.");

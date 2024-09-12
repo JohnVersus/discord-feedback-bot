@@ -12,6 +12,14 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
   const internalNotesChannel = client.channels.cache.get(
     "1106078218781474816"
   ) as TextChannel;
+  const internalRemindersChannel = client.channels.cache.get(
+    "1222416262794182776"
+  ) as TextChannel;
+
+  if (!internalRemindersChannel) {
+    console.log("Internal reminders channel not found");
+    return;
+  }
   if (!internalNotesChannel) {
     console.log("Internal notes channel not found");
     return;
@@ -42,6 +50,11 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
     }
 
     messages.forEach((message) => {
+      if (message.author.bot) {
+        // console.log(`Ignoring bot message ID ${message.id}`);
+        return; // Skip processing if the message is from a bot
+      }
+
       const messageDate = new Date(message.createdTimestamp);
 
       // Only process messages on or after startDate
@@ -52,8 +65,9 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
         const daysSinceMessage = Math.floor(
           (new Date().getTime() - messageDate.getTime()) / (1000 * 60 * 60 * 24)
         );
-        const isMultipleOfThreeDays =
-          daysSinceMessage % (BUFFER_TIME as unknown as number) === 0;
+        const isMultipleOfThreeDays = daysSinceMessage
+          ? daysSinceMessage % (BUFFER_TIME as unknown as number) === 0
+          : false;
         const hasCheckMark = message.reactions.cache.some(
           (reaction) => reaction.emoji.name === "✅"
         );
@@ -78,42 +92,44 @@ export async function checkPendingIssues(client: Client, startDate: Date) {
         userNotificationMessage += `${link}\n`;
       });
 
-      console.log(`Sending notification message for user ${authorId}.`);
-      //   console.log({ userNotificationMessage });
+      // console.log(`Sending notification message for user ${authorId}.`);
+      // console.log({ userNotificationMessage });
       // Uncomment the next line to send the message
-      await internalNotesChannel.send(userNotificationMessage);
+      await internalRemindersChannel.send(userNotificationMessage);
     }
   } else {
     console.log("No notifications to send.");
   }
 }
 
-// Scheduling the function to run at 5 AM UTC every 24 hours
+// Scheduling the function to run at 6 AM UTC every 24 hours
 export function scheduleDailyNotifications(client: Client, startDate: string) {
   const startDateTime = new Date(startDate).getTime();
 
   // comment only for test
-  //   checkPendingIssues(client, new Date(startDateTime));
+  // checkPendingIssues(client, new Date(startDateTime));
 
   const checkAndSchedule = () => {
     const now = new Date();
     const utcNow = new Date(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      now.getUTCHours(),
-      now.getUTCMinutes(),
-      now.getUTCSeconds()
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        now.getUTCHours(),
+        now.getUTCMinutes(),
+        now.getUTCSeconds()
+      )
     );
 
-    if (utcNow.getTime() - startDateTime >= 0 && utcNow.getUTCHours() === 5) {
-      // checks if the current UTC time is past the start date and if it's 5 AM
+    if (utcNow.getTime() - startDateTime >= 0 && utcNow.getUTCHours() === 6) {
+      // Checks if the current UTC time is past the start date and if it's 6 AM
       checkPendingIssues(client, new Date(startDateTime));
     }
 
     const nextCheck = new Date(utcNow);
     nextCheck.setUTCDate(utcNow.getUTCDate() + 1);
-    nextCheck.setUTCHours(6, 0, 0, 0); // sets the next check to be at 5 AM UTC the next day
+    nextCheck.setUTCHours(6, 0, 0, 0); // Sets the next check to be at 6 AM UTC the next day
 
     const delay = nextCheck.getTime() - utcNow.getTime();
     setTimeout(checkAndSchedule, delay);
@@ -121,15 +137,18 @@ export function scheduleDailyNotifications(client: Client, startDate: string) {
 
   const now = new Date();
   const firstCheck = new Date(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate(),
-    5,
-    0,
-    0,
-    0
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      6,
+      0,
+      0,
+      0
+    )
   );
-  // if it's already past 5 AM UTC, set the first check for the next day
+
+  // If it's already past 6 AM UTC, set the first check for the next day
   if (now.getTime() - firstCheck.getTime() > 0) {
     firstCheck.setUTCDate(firstCheck.getUTCDate() + 1);
   }
