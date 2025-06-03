@@ -16,6 +16,7 @@ import { ThreadUpdateEvent } from "./clientEvents/threadUpdate";
 import { ThreadCreateEvent } from "./clientEvents/threadCreate";
 import getThreadStats from "./commands/getThreadStats";
 import { scheduleDailyNotifications } from "./notifications/checkPendingIssues";
+import getPendingIssuesSummary from "./commands/getPendingIssuesSummary";
 
 export const DOCS_CHANNEL_NAME = "📚-documentation";
 
@@ -74,6 +75,7 @@ async function main() {
     getdocs,
     getDocsUsage,
     getThreadStats,
+    getPendingIssuesSummary,
     {
       name: "Get Feedback",
       type: 3,

@@ -25,6 +25,7 @@ import { autocomplete, execute } from "../commands/getDocs";
 import { generateEmbedsAndButtons, searchDocs } from "../docs/docs";
 import { collectFeedback } from "../slack";
 import { fetchThreads } from "../stats/threadStats";
+import { generatePendingIssuesSummary } from "../notifications/generatePendingIssuesSummary";
 
 interface DbValue {
   messageId?: string;
@@ -359,6 +360,22 @@ export const InteractionCreateEvent = async (interaction: Interaction) => {
         embeds: [statsEmbed],
         // ephemeral: true,
       });
+    } else if (interaction.commandName === "getpendingissuessummary") {
+      await interaction.deferReply({ ephemeral: true });
+
+      const guild = await client.guilds.fetch(GUILD_ID as string);
+      if (!guild) {
+        console.error("Guild not found. Check your GUILD_ID.");
+        await interaction.editReply("Error: Guild not found.");
+        return;
+      }
+
+      const startDate = new Date(); // You can replace this with a specific start date if needed
+
+      // Call the function to get the summary of pending issues
+      await generatePendingIssuesSummary(client);
+
+      await interaction.editReply("Summary of pending issues logged.");
     }
   }
   if (interaction.isMessageContextMenuCommand()) {
